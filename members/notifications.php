@@ -134,8 +134,8 @@ mysqli_close($connection);
 </head>
 
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
             <button class="navbar-toggler me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar">
                 <span class="navbar-toggler-icon"></span>
@@ -148,8 +148,7 @@ mysqli_close($connection);
                             <i class="bi bi-person-fill"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li><a class="dropdown-item" href="profile.php">Profile</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="logout.php">Logout</a></li>
                         </ul>
@@ -174,7 +173,7 @@ mysqli_close($connection);
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="notifications.php" class="nav-link px-3">
+                    <a href="notifications.php" class="nav-link px-3 active" >
                         <i class="bi bi-bell me-2"></i>
                         Notifications
                     </a>

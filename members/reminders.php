@@ -99,8 +99,7 @@ $connection->close();
                             <i class="bi bi-person-fill"></i>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li><a class="dropdown-item" href="profile.php">Profile</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="logout.php">Logout</a></li>
                         </ul>
@@ -131,7 +130,7 @@ $connection->close();
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="reminders.php" class="nav-link px-3">
+                    <a href="reminders.php" class="nav-link px-3 active">
                         <i class="bi bi-calendar-check me-2"></i>
                         Reminders
                         <?php if ($reminder_count > 0) { ?>

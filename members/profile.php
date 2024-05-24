@@ -9,48 +9,15 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-// Fetch fullname from database based on the logged-in user
+// Fetch member details from database based on the logged-in user
 $username = $_SESSION['username'];
-$query = "SELECT fullname FROM members WHERE username=?";
+$query = "SELECT fullname, phone, address, gender, plan, service, expiry_date FROM members WHERE username=?";
 $stmt = mysqli_prepare($connection, $query);
 mysqli_stmt_bind_param($stmt, "s", $username);
 mysqli_stmt_execute($stmt);
-mysqli_stmt_store_result($stmt);
-
-if (mysqli_stmt_num_rows($stmt) == 1) {
-    mysqli_stmt_bind_result($stmt, $fullname);
-    mysqli_stmt_fetch($stmt);
-} else {
-    // Handle error if fullname is not found
-    $fullname = "Fullname not found";
-}
+mysqli_stmt_bind_result($stmt, $fullname, $phone, $address, $gender, $plan, $service, $expiry_date);
+mysqli_stmt_fetch($stmt);
 mysqli_stmt_close($stmt);
-
-// Fetch announcements from the database
-$announcements = [];
-$query = "SELECT message, date FROM announcements";
-$result = mysqli_query($connection, $query);
-if ($result) {
-    while ($row = mysqli_fetch_assoc($result)) {
-        $announcements[] = $row;
-    }
-    mysqli_free_result($result);
-} else {
-    // Handle error if unable to fetch announcements
-    $error_message = "Error fetching announcements: " . mysqli_error($connection);
-}
-
-// Count reminders for the logged-in user
-$qry_count = "SELECT COUNT(*) AS reminder_count FROM members WHERE username=? AND reminder=1";
-$stmt_count = $connection->prepare($qry_count);
-$stmt_count->bind_param("s", $username);
-$stmt_count->execute();
-$result_count = $stmt_count->get_result();
-$row_count = $result_count->fetch_assoc();
-$reminder_count = $row_count['reminder_count'];
-
-$stmt_count->close();
-mysqli_close($connection);
 ?>
 
 <!DOCTYPE html>
@@ -60,7 +27,7 @@ mysqli_close($connection);
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Members Dashboard</title>
+    <title>Profile</title>
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/style.css">
@@ -110,35 +77,6 @@ mysqli_close($connection);
         .nav-item.active .nav-link {
             background-color: #212529;
         }
-        .notification-card {
-            padding: 5px; /* Adjust padding as needed */
-            max-width: 450px; /* Adjust maximum width as needed */
-            margin: left; /* Center the card horizontally */
-        }
-        .notification-window {
-            max-height: 150px; /* Adjust height as needed */
-            overflow-y: auto;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            margin-top: 20px;
-        }
-
-        .announcement-content {
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .announcement-date {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            font-size: 0.8rem;
-            color: #6c757d;
-        }
     </style>
 </head>
 
@@ -158,6 +96,7 @@ mysqli_close($connection);
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
                             <li><a class="dropdown-item" href="profile.php">Profile</a></li>
+                            <li><a class="dropdown-item" href="#">Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="logout.php">Logout</a></li>
                         </ul>
@@ -176,7 +115,7 @@ mysqli_close($connection);
             <nav class="navbar-dark">
                 <ul class="navbar-nav flex-column">
                     <li class="nav-item">
-                        <a href="dashboard.php" class="nav-link px-3 active">
+                        <a href="dashboard.php" class="nav-link px-3">
                             <i class="bi bi-speedometer2 me-2"></i>
                             Dashboard
                         </a>
@@ -191,9 +130,6 @@ mysqli_close($connection);
                         <a href="reminders.php" class="nav-link px-3">
                             <i class="bi bi-calendar-check me-2"></i>
                             Reminders
-                            <?php if ($reminder_count > 0) { ?>
-                                <span class="badge bg-danger"><?php echo $reminder_count; ?></span>
-                            <?php } ?>
                         </a>
                     </li>
                 </ul>
@@ -208,29 +144,14 @@ mysqli_close($connection);
                 <div class="col-lg-12">
                     <div class="card bg-light mb-3 custom-card">
                         <div class="card-body">
-                            <h5 class="card-title"> Welcome</h5>
-                            <p class="card-text"><?php echo htmlspecialchars($fullname); ?></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="card bg-light mb-3 custom-card notification-card">
-                        <div class="card-body">
-                            <h5 class="card-title">Notifications</h5>
-                            <div class="notification-window">
-                                <?php
-                                if (!empty($announcements)) {
-                                    foreach ($announcements as $announcement) {
-                                        echo "<div class='announcement-content'>";
-                                        echo "<p class='mb-0'>" . htmlspecialchars($announcement['message']) . "</p>";
-                                        echo "<p class='mb-0 announcement-date'>" . htmlspecialchars($announcement['date']) . "</p>";
-                                        echo "</div>";
-                                    }
-                                } else {
-                                    echo "<p>No notifications available.</p>";
-                                }
-                                ?>
-                            </div>
+                            <h5 class="card-title">Profile Information</h5>
+                            <p class="card-text"><strong>Full Name:</strong> <?php echo htmlspecialchars($fullname); ?></p>
+                            <p class="card-text"><strong>Phone:</strong> <?php echo htmlspecialchars($phone); ?></p>
+                            <p class="card-text"><strong>Address:</strong> <?php echo htmlspecialchars($address); ?></p>
+                            <p class="card-text"><strong>Gender:</strong> <?php echo htmlspecialchars($gender); ?></p>
+                            <p class="card-text"><strong>Plan:</strong> <?php echo htmlspecialchars($plan); ?></p>
+                            <p class="card-text"><strong>Service:</strong> <?php echo htmlspecialchars($service); ?></p>
+                            <p class="card-text"><strong>Current Membership Expiry Date:</strong> <?php echo htmlspecialchars($expiry_date); ?></p>
                         </div>
                     </div>
                 </div>

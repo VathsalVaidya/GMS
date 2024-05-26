@@ -210,46 +210,38 @@ $username = $_SESSION['admin_username'];
     font-family: 'Courier New', Courier, monospace;
     font-weight: 600;
     }
-
-/* Improved Announcement Styling */
-
-/* Container styling */
 .announcement-container {
-    max-height: 300px; /* Limit height to allow scrolling if necessary */
-    overflow-y: auto; /* Enable vertical scrolling */
+    max-height: 300px; 
+    overflow-y: auto; 
 }
 
-/* Individual announcement styling */
 .announcement {
-    padding: 15px; /* Add padding around each announcement */
-    border-bottom: 1px solid #e5e5e5; /* Light border between announcements */
-    transition: background-color 0.3s ease; /* Smooth transition on hover */
+    padding: 15px; 
+    border-bottom: 1px solid #e5e5e5;
+    transition: background-color 0.3s ease; 
 }
 
 .announcement:hover {
-    background-color: #f5f5f5; /* Light background color on hover */
+    background-color: #f5f5f5; 
 }
 
-/* Date styling */
+
 .announcement-date {
     font-size: 12px;
-    color: #999; /* Lighter text color */
-    margin-bottom: 5px; /* Add space between date and message */
+    color: #999;
+    margin-bottom: 5px; 
 }
 
-/* Message styling */
 .announcement-message {
     font-size: 16px;
-    color: #333; /* Dark text color */
-    line-height: 1.5; /* Improved line spacing for readability */
+    color: #333; 
+    line-height: 1.5; 
 }
 
-/* Add subtle box shadow to give depth */
 .announcement {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Animation on hover */
 .announcement:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);

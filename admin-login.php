@@ -115,7 +115,7 @@
 
 <body>
     <div class="wrapper">
-        <form action="index.php" method="Post">
+        <form action="admin/index.php" method="Post">
             <h1>GYM STATION</h1>
             <?php if (isset ($_GET['error'])) { ?>
                 <p class="error">
@@ -135,7 +135,7 @@
         <!-- Member login option -->
         <div class="member-login">
             <span>Are you a member?</span>
-            <a href="../members/member-login.php">Sign in as a member</a>
+            <a href="members/member-login.php">Sign in as a member</a>
         </div>
     </div>
 </body>

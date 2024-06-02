@@ -15,10 +15,10 @@ if (isset($_POST['user']) && isset($_POST['pass'])) {
     $password = validate($_POST['pass']);
 
     if (empty($username)) {
-        header("Location: admin-login.php?error=Username is required");
+        header("Location: ../admin-login.php?error=Username is required");
         exit();
     } elseif (empty($password)) {
-        header("Location: admin-login.php?error=Password is required");
+        header("Location: ../admin-login.php?error=Password is required");
         exit();
     } else {
         $sql = "SELECT username FROM users WHERE username = '$username' AND password = '$password'";
@@ -30,12 +30,12 @@ if (isset($_POST['user']) && isset($_POST['pass'])) {
             header("Location: dashboard.php");
             exit();
         } else {
-            header("Location: admin-login.php?error=Incorrect Username or Password");
+            header("Location: ../admin-login.php?error=Incorrect Username or Password");
             exit();
         }
     }
 } else {
-    header("Location: admin-login.php");
+    header("Location: ../admin-login.php");
     exit();
 }
 ?>

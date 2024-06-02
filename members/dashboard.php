@@ -9,20 +9,21 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-// Fetch fullname from database based on the logged-in user
+// Fetch fullname and expiry date from database based on the logged-in user
 $username = $_SESSION['username'];
-$query = "SELECT fullname FROM members WHERE username=?";
+$query = "SELECT fullname, expiry_date FROM members WHERE username=?";
 $stmt = mysqli_prepare($connection, $query);
 mysqli_stmt_bind_param($stmt, "s", $username);
 mysqli_stmt_execute($stmt);
 mysqli_stmt_store_result($stmt);
 
 if (mysqli_stmt_num_rows($stmt) == 1) {
-    mysqli_stmt_bind_result($stmt, $fullname);
+    mysqli_stmt_bind_result($stmt, $fullname, $expiry_date);
     mysqli_stmt_fetch($stmt);
 } else {
     // Handle error if fullname is not found
     $fullname = "Fullname not found";
+    $expiry_date = null;
 }
 mysqli_stmt_close($stmt);
 
@@ -51,6 +52,20 @@ $reminder_count = $row_count['reminder_count'];
 
 $stmt_count->close();
 mysqli_close($connection);
+
+// Calculate the number of days until the expiry date
+$days_until_expiry = null;
+if ($expiry_date) {
+    $expiry_date_time = new DateTime($expiry_date);
+    $current_date_time = new DateTime();
+    $interval = $current_date_time->diff($expiry_date_time);
+    $days_until_expiry = $interval->days;
+
+    // Check if the expiry date is within the next 7 days
+    $expiry_alert = $expiry_date_time >= $current_date_time && $days_until_expiry <= 7;
+} else {
+    $expiry_alert = false;
+}
 ?>
 
 <!DOCTYPE html>
@@ -110,11 +125,13 @@ mysqli_close($connection);
         .nav-item.active .nav-link {
             background-color: #212529;
         }
+
         .notification-card {
             padding: 5px; /* Adjust padding as needed */
             max-width: 450px; /* Adjust maximum width as needed */
             margin: left; /* Center the card horizontally */
         }
+
         .notification-window {
             max-height: 150px; /* Adjust height as needed */
             overflow-y: auto;
@@ -234,6 +251,13 @@ mysqli_close($connection);
                         </div>
                     </div>
                 </div>
+                <?php if ($expiry_alert) { ?>
+                <div class="col-lg-12">
+                    <div class="alert alert-warning" role="alert">
+                        Your membership will expire in <?php echo $days_until_expiry; ?> days. Please pay your bill to renew your membership.
+                    </div>
+                </div>
+                <?php } ?>
             </div>
         </div>
     </main>

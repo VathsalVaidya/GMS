@@ -135,7 +135,7 @@
         </div>
         <div class="member-login">
             <span>Admin login?</span>
-            <a href="../admin/admin-login.php">Login here</a>
+            <a href="../admin-login.php">Login here</a>
         </div>
     </div>
 </body>

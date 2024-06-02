@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $error = "Invalid username or password.";
         // Redirect with error message
-        header("Location: admin-login.php?error=" . urlencode($error));
+        header("Location: ../admin-login.php?error=" . urlencode($error));
         exit();
     }
 }

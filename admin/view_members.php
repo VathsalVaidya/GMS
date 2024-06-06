@@ -170,6 +170,12 @@ $result = mysqli_query($connection, $sql);
                             <a class="nav-link px-3" href="view_equipments.php">View Equipments Data</a>
                         </div>
                     </li>
+                    <li class="nav-item">
+            <a class="nav-link" href="../members/member-registration.php" target="_blank">
+                <i class="bi bi-person-plus"></i>
+                Register New Member
+            </a>
+        </li>
                 </ul>
             </nav>
         </div>

@@ -10,6 +10,16 @@ function validateNepaliPhoneNumber($number) {
     }
 }
 
+function validateFullName($name) {
+    // Ensure Full Name is not empty and contains only alphabetic characters and spaces
+    return !empty($name) && preg_match('/^[a-zA-Z ]+$/', $name);
+}
+
+function validatePassword($password) {
+    // Ensure Password is at least 6 characters long and contains both letters and numbers
+    return strlen($password) >= 6 && preg_match('/[a-zA-Z]/', $password) && preg_match('/\d/', $password);
+}
+
 if (isset($_POST["submit"])) {
     // Check if the connection is established
     if (!$connection) {
@@ -19,7 +29,7 @@ if (isset($_POST["submit"])) {
     // Retrieve form data
     $fullname = $_POST["fullname"];
     $username = $_POST["username"];
-    $password = $_POST["password"];
+    $password = $_POST["password"]; // Plain text password
     $dob = $_POST["dob"];
     $phone = $_POST["phone"];
     $address = $_POST["address"];
@@ -30,8 +40,16 @@ if (isset($_POST["submit"])) {
     // Set default status to 'Reg Pending'
     $status = 'Reg Pending';
 
+    // Validate Full Name
+    if (!validateFullName($fullname)) {
+        $error = "Invalid full name format. Please enter alphabetic characters and spaces only.";
+    }
+    // Validate Password
+    elseif (!validatePassword($password)) {
+        $error = "Invalid password format. Password must be at least 6 characters long and contain both letters and numbers.";
+    }
     // Validate phone number
-    if (!validateNepaliPhoneNumber($phone)) {
+    elseif (!validateNepaliPhoneNumber($phone)) {
         $error = "Invalid phone number format. Please enter a valid Nepali phone number.";
     } else {
         // Check if username or phone number already exist
@@ -47,8 +65,11 @@ if (isset($_POST["submit"])) {
             // Phone number already exists
             $error = "Phone number already registered.";
         } else {
+            // Encrypt the password
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
             // Prepare SQL statement to insert data into the database
-            $ins = "INSERT INTO members (fullname, username, password, dob, phone, address, gender, plan, service, status) VALUES ('$fullname','$username','$password', '$dob', '$phone', '$address','$gender','$plan','$service', '$status')";
+            $ins = "INSERT INTO members (fullname, username, password, dob, phone, address, gender, plan, service, status) VALUES ('$fullname','$username','$hashed_password', '$dob', '$phone', '$address','$gender','$plan','$service', '$status')";
 
             // Execute the SQL query
             $query = mysqli_query($connection, $ins);
@@ -68,6 +89,8 @@ if (isset($_POST["submit"])) {
     }
 }
 ?>
+
+
 
 
 <!DOCTYPE html>

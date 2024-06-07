@@ -1,38 +1,29 @@
 <?php
 session_start();
 include '../config.php';
+
 function check_session_timeout($timeout_duration = 1800) {
-    // Check if last activity timestamp is set
     if (isset($_SESSION['last_activity'])) {
-        // Get current timestamp
         $current_time = time();
-        // Calculate time difference in seconds
         $elapsed_time = $current_time - $_SESSION['last_activity'];
 
-        // Check if elapsed time exceeds the timeout duration
         if ($elapsed_time > $timeout_duration) {
-            // Session expired, destroy session and redirect to login page
             session_unset();
             session_destroy();
             header("Location: member-login.php");
             exit();
         }
     }
-
-    // Update last activity timestamp
     $_SESSION['last_activity'] = time();
 }
 
-// Call the function to check session expiration
 check_session_timeout();
-// Check if the user is logged in
+
 if (!isset($_SESSION['username'])) {
-    // If not logged in, redirect to login page
     header("Location: member-login.php");
     exit();
 }
 
-// Fetch fullname and expiry date from database based on the logged-in user
 $username = $_SESSION['username'];
 $query = "SELECT fullname, expiry_date FROM members WHERE username=?";
 $stmt = mysqli_prepare($connection, $query);
@@ -44,13 +35,11 @@ if (mysqli_stmt_num_rows($stmt) == 1) {
     mysqli_stmt_bind_result($stmt, $fullname, $expiry_date);
     mysqli_stmt_fetch($stmt);
 } else {
-    // Handle error if fullname is not found
     $fullname = "Fullname not found";
     $expiry_date = null;
 }
 mysqli_stmt_close($stmt);
 
-// Fetch announcements from the database
 $announcements = [];
 $query = "SELECT message, date FROM announcements";
 $result = mysqli_query($connection, $query);
@@ -60,11 +49,9 @@ if ($result) {
     }
     mysqli_free_result($result);
 } else {
-    // Handle error if unable to fetch announcements
     $error_message = "Error fetching announcements: " . mysqli_error($connection);
 }
 
-// Count reminders for the logged-in user
 $qry_count = "SELECT COUNT(*) AS reminder_count FROM members WHERE username=? AND reminder=1";
 $stmt_count = $connection->prepare($qry_count);
 $stmt_count->bind_param("s", $username);
@@ -75,7 +62,6 @@ $reminder_count = $row_count['reminder_count'];
 
 $stmt_count->close();
 
-// Fetch diet plans for the logged-in user
 $diet_plans = [];
 $query = "SELECT diet_plan, created_at FROM diet_plans WHERE username=?";
 $stmt = mysqli_prepare($connection, $query);
@@ -89,24 +75,22 @@ mysqli_stmt_close($stmt);
 
 mysqli_close($connection);
 
-// Calculate the number of days until the expiry date
 $days_until_expiry = null;
+$expiry_alert_message = "";
 if ($expiry_date) {
     $expiry_date_time = new DateTime($expiry_date);
     $current_date_time = new DateTime();
     $interval = $current_date_time->diff($expiry_date_time);
     $days_until_expiry = $interval->days;
 
-    // Check if the expiry date is within the next 7 days
-    $expiry_alert = ($expiry_date_time >= $current_date_time && $days_until_expiry <= 7) || $days_until_expiry == 0;
-} else {
-    $expiry_alert = false;
+    if (($expiry_date_time >= $current_date_time && $days_until_expiry <= 7) || $days_until_expiry == 0) {
+        $expiry_alert_message = "Your membership will expire in $days_until_expiry days. Please renew soon.";
+    }
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -116,98 +100,25 @@ if ($expiry_date) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        /* Custom styles for this template */
-        body {
-            padding-top: 56px;
-        }
-
+        body { padding-top: 56px; }
         @media (min-width: 768px) {
-            body {
-                padding-top: 60px;
-            }
-
-            .sidebar-nav {
-                height: 100vh;
-                position: fixed;
-                top: 0; /* Adjust top position to top of viewport */
-                left: 0;
-                width: 250px;
-                overflow-y: auto;
-                z-index: 1; /* Ensure sidebar is above content */
-            }
-
-            .main-content {
-                padding-top: 1rem; /* Add padding to prevent overlap */
-                margin-left: 250px; /* Adjust margin based on sidebar width */
-            }
-
-            .navbar-nav {
-                margin-left: auto;
-            }
+            body { padding-top: 60px; }
+            .sidebar-nav { height: 100vh; position: fixed; top: 0; left: 0; width: 250px; overflow-y: auto; z-index: 1; }
+            .main-content { padding-top: 1rem; margin-left: 250px; }
+            .navbar-nav { margin-left: auto; }
         }
-
-        .sidebar-nav {
-            background-color: #343a40;
-            color: #fff;
-        }
-
-        .sidebar-nav .nav-link {
-            color: #fff
-        }
-
-        .sidebar-nav .nav-link:hover {
-            background-color: #495057;
-        }
-
-        .nav-item.active .nav-link {
-            background-color: #212529;
-        }
-
-        .notification-card,
-        .diet-plan-card {
-            padding: 5px;
-            margin: 10px 0;
-        }
-
-        .notification-window {
-            max-height: 150px;
-            overflow-y: auto;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            margin-top: 20px;
-        }
-
-        .announcement-content {
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 10px;
-            margin-bottom: 20px; /* Adjust this margin as needed */
-            position: relative;
-        }
-
-        .announcement-date {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            font-size: 0.8rem;
-            color: #6c757d;
-        }
-
-        .list-group {
-            max-height: 150px;
-            overflow-y: auto;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            margin-top: 20px;
-        }
+        .sidebar-nav { background-color: #343a40; color: #fff; }
+        .sidebar-nav .nav-link { color: #fff; }
+        .sidebar-nav .nav-link:hover { background-color: #495057; }
+        .nav-item.active .nav-link { background-color: #212529; }
+        .notification-card, .diet-plan-card { padding: 5px; margin: 10px 0; }
+        .notification-window { max-height: 150px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; background-color: #f8f9fa; margin-top: 20px; }
+        .announcement-content { border-bottom: 1px solid #dee2e6; padding-bottom: 10px; margin-bottom: 20px; position: relative; }
+        .announcement-date { position: absolute; bottom: 0; right: 0; font-size: 0.8rem; color: #6c757d; }
+        .list-group { max-height: 150px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; background-color: #f8f9fa; margin-top: 20px; }
     </style>
 </head>
-
 <body>
-    <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
             <button class="navbar-toggler me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar">
@@ -231,7 +142,6 @@ if ($expiry_date) {
         </div>
     </nav>
 
-    <!-- Sidebar -->
     <div class="offcanvas offcanvas-start sidebar-nav bg-dark" tabindex="-1" id="dashboard-sidebar">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title text-white">Menu</h5>
@@ -271,16 +181,13 @@ if ($expiry_date) {
         </div>
     </div>
 
-    <!-- Page Content -->
     <main class="main-content">
         <div class="container-fluid">
             <div class="row">
-                <!-- Sidebar Toggle Button -->
                 <button class="navbar-toggler d-lg-none me-auto" type="button" data-bs-toggle="offcanvas" data-bs-target="#dashboard-sidebar">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <!-- Dashboard Content -->
                 <div class="col-lg-12">
                     <div class="card bg-light mb-3 custom-card">
                         <div class="card-body">
@@ -332,18 +239,15 @@ if ($expiry_date) {
                     </div>
                 </div>
             </div>
-            <?php if ($expiry_alert) { ?>
+            <?php if (!empty($expiry_alert_message)) { ?>
                 <div class="alert alert-danger mt-4">
-                    Your membership will expire in <?php echo $days_until_expiry; ?> days. Please renew soon.
+                    <?php echo $expiry_alert_message; ?>
                 </div>
             <?php } ?>
         </div>
     </main>
 
-    <!-- Scripts -->
     <script src="./js/bootstrap.bundle.min.js"></script>
     <script src="./js/jquery-3.5.1.js"></script>
 </body>
-
 </html>
-

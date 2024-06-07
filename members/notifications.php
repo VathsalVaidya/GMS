@@ -181,39 +181,45 @@ mysqli_close($connection);
         </div>
     </nav>
 
-    <!-- Sidebar -->
-<div class="offcanvas offcanvas-start sidebar-nav bg-dark" tabindex="-1" id="dashboard-sidebar">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title text-white">Menu</h5>
+   <!-- Sidebar -->
+   <div class="offcanvas offcanvas-start sidebar-nav bg-dark" tabindex="-1" id="dashboard-sidebar">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title text-white">Menu</h5>
+        </div>
+        <div class="offcanvas-body p-0">
+            <nav class="navbar-dark">
+                <ul class="navbar-nav flex-column">
+                    <li class="nav-item">
+                        <a href="dashboard.php" class="nav-link px-3">
+                            <i class="bi bi-speedometer2 me-2"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="notifications.php" class="nav-link px-3 active">
+                            <i class="bi bi-bell me-2"></i>
+                            Notifications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="reminders.php" class="nav-link px-3">
+                            <i class="bi bi-calendar-check me-2"></i>
+                            Reminders
+                            <?php if ($reminder_count > 0) { ?>
+                                <span class="badge bg-danger"><?php echo $reminder_count; ?></span>
+                            <?php } ?>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="diet.php" class="nav-link px-3">
+                            <i class="bi bi-nutrition me-2"></i>
+                            Plan a Diet
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </div>
-    <div class="offcanvas-body p-0">
-        <nav class="navbar-dark">
-            <ul class="navbar-nav flex-column">
-                <li class="nav-item">
-                    <a href="dashboard.php" class="nav-link px-3">
-                        <i class="bi bi-speedometer2 me-2"></i>
-                        Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="notifications.php" class="nav-link px-3 active" >
-                        <i class="bi bi-bell me-2"></i>
-                        Notifications
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="reminders.php" class="nav-link px-3">
-                        <i class="bi bi-calendar-check me-2"></i>
-                        Reminders
-                        <?php if ($reminder_count > 0) { ?>
-                            <span class="badge bg-danger"><?php echo $reminder_count; ?></span>
-                        <?php } ?>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
-</div>
 
     <!-- Page Content -->
     <main class="main-content">

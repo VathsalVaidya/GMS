@@ -139,7 +139,7 @@ if (isset($_GET['username']) && isset($_GET['service'])) {
             <nav class="navbar-dark">
                 <ul class="navbar-nav flex-column">
                     <li class="nav-item">
-                        <a href="index.html" class="nav-link px-3">
+                        <a href="dashboard.php" class="nav-link px-3">
                             <i class="bi bi-speedometer2 me-2"></i>
                             Dashboard
                         </a>

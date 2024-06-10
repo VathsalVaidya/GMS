@@ -1,5 +1,43 @@
 <?php
 include '../config.php';
+require 'C:/Users/vinay/vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+function generateVerificationCode() {
+    // Generate a random verification code
+    return rand(100000, 999999);
+}
+
+function sendVerificationEmail($email, $verificationCode) {
+    $mail = new PHPMailer(true);
+    try {
+        //Server settings
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com'; // Specify your SMTP server
+        $mail->SMTPAuth = true;
+        $mail->Username = 'vathsalvaidya@gmail.com'; // SMTP username
+        $mail->Password = 'skwqsbrahbnqwgux'; // SMTP password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587; // SMTP port
+
+        //Recipients
+        $mail->setFrom('vathsalvaidya@gmail.com', 'Vathsal Vaidya');
+        $mail->addAddress($email); // Add a recipient
+
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = 'Verification Code';
+        $mail->Body = 'Your verification code is: ' . $verificationCode;
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
 
 function validateNepaliPhoneNumber($number) {
     $number = preg_replace('/[^0-9]/', '', $number);
@@ -10,15 +48,22 @@ function validateNepaliPhoneNumber($number) {
     }
 }
 
-function validateFullName($name) {
-    // Ensure Full Name is not empty and contains only alphabetic characters and spaces
-    return !empty($name) && preg_match('/^[a-zA-Z ]+$/', $name);
+function validateFullName($fullname) {
+    // Perform validation logic here
+    // For example, you can use regular expressions to validate the full name format
+    return preg_match('/^[a-zA-Z\s]+$/', $fullname);
 }
 
 function validatePassword($password) {
-    // Ensure Password is at least 6 characters long and contains both letters and numbers
-    return strlen($password) >= 6 && preg_match('/[a-zA-Z]/', $password) && preg_match('/\d/', $password);
+    // Password must be at least 6 characters long and contain both letters and numbers
+    return preg_match('/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/', $password);
 }
+
+function validateEmail($email) {
+    // Validate email address format
+    return filter_var($email, FILTER_VALIDATE_EMAIL);
+}
+
 
 if (isset($_POST["submit"])) {
     // Check if the connection is established
@@ -32,6 +77,7 @@ if (isset($_POST["submit"])) {
     $password = $_POST["password"]; // Plain text password
     $dob = $_POST["dob"];
     $phone = $_POST["phone"];
+    $email = $_POST["email"]; // New email field
     $address = $_POST["address"];
     $gender = $_POST["gender"];
     $plan = $_POST["plan"];
@@ -40,50 +86,68 @@ if (isset($_POST["submit"])) {
     // Set default status to 'Reg Pending'
     $status = 'Reg Pending';
 
-    // Validate Full Name
-    if (!validateFullName($fullname)) {
-        $error = "Invalid full name format. Please enter alphabetic characters and spaces only.";
-    }
-    // Validate Password
-    elseif (!validatePassword($password)) {
-        $error = "Invalid password format. Password must be at least 6 characters long and contain both letters and numbers.";
-    }
-    // Validate phone number
-    elseif (!validateNepaliPhoneNumber($phone)) {
-        $error = "Invalid phone number format. Please enter a valid Nepali phone number.";
+    // Generate verification code
+    $verificationCode = generateVerificationCode();
+
+    // Send verification email
+    if (!sendVerificationEmail($email, $verificationCode)) {
+        $error = "Failed to send verification email.";
     } else {
-        // Check if username or phone number already exist
-        $check_username_query = "SELECT * FROM members WHERE username='$username'";
-        $check_phone_query = "SELECT * FROM members WHERE phone='$phone'";
-        $username_result = mysqli_query($connection, $check_username_query);
-        $phone_result = mysqli_query($connection, $check_phone_query);
-
-        if (mysqli_num_rows($username_result) > 0) {
-            // Username already exists
-            $error = "Username already registered. Please choose a different username.";
-        } elseif (mysqli_num_rows($phone_result) > 0) {
-            // Phone number already exists
-            $error = "Phone number already registered.";
+        // Validate Full Name
+        if (!validateFullName($fullname)) {
+            $error = "Invalid full name format. Please enter alphabetic characters and spaces only.";
+        }
+        // Validate Password
+        elseif (!validatePassword($password)) {
+            $error = "Invalid password format. Password must be at least 6 characters long and contain both letters and numbers.";
+        }
+        // Validate phone number
+        elseif (!validateNepaliPhoneNumber($phone)) {
+            $error = "Invalid phone number format. Please enter a valid Nepali phone number.";
+        }
+        // Validate email
+        elseif (!validateEmail($email)) {
+            $error = "Invalid email address format. Please enter a valid email address.";
         } else {
-            // Store the plain password directly
-            $plain_password = $password;
+            // Check if username, phone number, or email already exist
+            $check_username_query = "SELECT * FROM members WHERE username='$username'";
+            $check_phone_query = "SELECT * FROM members WHERE phone='$phone'";
+            $check_email_query = "SELECT * FROM members WHERE email='$email'";
+            $username_result = mysqli_query($connection, $check_username_query);
+            $phone_result = mysqli_query($connection, $check_phone_query);
+            $email_result = mysqli_query($connection, $check_email_query);
 
-            // Prepare SQL statement to insert data into the database
-            $ins = "INSERT INTO members (fullname, username, password, dob, phone, address, gender, plan, service, status) VALUES ('$fullname','$username','$plain_password', '$dob', '$phone', '$address','$gender','$plan','$service', '$status')";
-
-            // Execute the SQL query
-            $query = mysqli_query($connection, $ins);
-
-            // Check if the query was successful
-            if ($query) {
-                // Display success message
-                $message = "Account registered successfully. Please wait for registration approval.";
-                // Redirect to another page to prevent form resubmission
-                header("Location: registration-success.php");
-                exit();
+            if (mysqli_num_rows($username_result) > 0) {
+                // Username already exists
+                $error = "Username already registered. Please choose a different username.";
+            } elseif (mysqli_num_rows($phone_result) > 0) {
+                // Phone number already exists
+                $error = "Phone number already registered.";
+            } elseif (mysqli_num_rows($email_result) > 0) {
+                // Email already exists
+                $error = "Email address already registered.";
             } else {
-                // Display an error message and the SQL error, if any
-                $error = "Failed to insert data: " . mysqli_error($connection);
+                // Store the plain password directly
+                $plain_password = $password;
+
+                // Prepare SQL statement to insert data into the database
+                $ins = "INSERT INTO members (fullname, username, password, dob, phone, email, address, gender, plan, service, status, verification_code) 
+                        VALUES ('$fullname','$username','$plain_password', '$dob', '$phone', '$email', '$address','$gender','$plan','$service', '$status', '$verificationCode')";
+
+                // Execute the SQL query
+                $query = mysqli_query($connection, $ins);
+
+                // Check if the query was successful
+                if ($query) {
+                    // Display success message
+                    $message = "Account registered successfully. Please wait for registration approval.";
+                    // Redirect to another page to prevent form resubmission
+                    header("Location: registration-success.php");
+                    exit();
+                } else {
+                    // Display an error message and the SQL error, if any
+                    $error = "Failed to insert data: " . mysqli_error($connection);
+                }
             }
         }
     }
@@ -252,6 +316,10 @@ if (isset($_POST["submit"])) {
                 <i class='bx bxs-phone'></i>
             </div>
             <div class="input-box">
+                <input type="email" name="email" placeholder="Email Address" required> <!-- Email input field -->
+                <i class='bx bx-envelope'></i> 
+            </div>
+            <div class="input-box">
                 <input type="text" name="address" placeholder="Address" required>
                 <i class='bx bxs-map'></i>
             </div>
@@ -289,3 +357,4 @@ if (isset($_POST["submit"])) {
     </div>
 </body>
 </html>
+

@@ -65,11 +65,11 @@ if (isset($_POST["submit"])) {
             // Phone number already exists
             $error = "Phone number already registered.";
         } else {
-            // Encrypt the password
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            // Store the plain password directly
+            $plain_password = $password;
 
             // Prepare SQL statement to insert data into the database
-            $ins = "INSERT INTO members (fullname, username, password, dob, phone, address, gender, plan, service, status) VALUES ('$fullname','$username','$hashed_password', '$dob', '$phone', '$address','$gender','$plan','$service', '$status')";
+            $ins = "INSERT INTO members (fullname, username, password, dob, phone, address, gender, plan, service, status) VALUES ('$fullname','$username','$plain_password', '$dob', '$phone', '$address','$gender','$plan','$service', '$status')";
 
             // Execute the SQL query
             $query = mysqli_query($connection, $ins);
@@ -89,9 +89,6 @@ if (isset($_POST["submit"])) {
     }
 }
 ?>
-
-
-
 
 <!DOCTYPE html>
 <html lang="en">
